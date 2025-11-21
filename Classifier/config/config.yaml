@@ -1,0 +1,25 @@
+api:
+  key: "EdDi9ZvaIS7YgAcj6wjAW7pYwR2OBjzZBtU8YNHa"
+
+download:
+  output_dir: "data/raw_reports"
+  n_random_companies: 100
+  n_filings_per_company: 3
+  filing_type_id: null
+
+chunking:
+  chunk_size: 2000
+  overlap: 200
+  output_dir: "data/chunks"
+
+weak_labelling:
+  categories:
+    - "Legal boilerplate"
+    - "Raw material related"
+    - "Inflation related"
+  llm_model: "mixtral"  # nom exact du modèle Ollama installé localement
+  output_file: "data/weak_labels/weak_labels.json"
+  multi_label_file: "data/weak_labels/multi_label_cases.json"
+
+logging:
+  level: "INFO"
