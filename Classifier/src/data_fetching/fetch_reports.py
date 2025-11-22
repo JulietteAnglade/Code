@@ -1,13 +1,3 @@
-"""
-Client complet pour l'API FinancialReports.
-Permet de :
-- récupérer les IDs d'entreprises
-- sélectionner des entreprises au hasard
-- filtrer les filings par type
-- télécharger les markdown et metadata
-- sauvegarder localement
-"""
-
 import os
 import time
 import random
@@ -27,6 +17,7 @@ class Report:
 class ReportFetcher:
     """
     Client FinancialReports avec téléchargement aléatoire de filings d'entreprises.
+    Compatible Level 1 (Markdown inaccessible).
     """
 
     def __init__(self, api_key: str, base_url: str = BASE_URL, storage_dir: str = "data/raw"):
@@ -39,29 +30,42 @@ class ReportFetcher:
 
     def _handle_response(self, r: requests.Response):
         if r.status_code == 429:
+            print("Rate limit exceeded!")
             raise requests.exceptions.RetryError("Rate limit exceeded (429).")
-        r.raise_for_status()
+        if r.status_code >= 400 and r.status_code != 403:
+            print(f"HTTP Error {r.status_code}: {r.text}")
+            r.raise_for_status()
         return r
 
     @retry(stop=stop_after_attempt(4), wait=wait_exponential(multiplier=1, min=1, max=10),
            retry=retry_if_exception_type(requests.exceptions.RequestException))
     def fetch_markdown(self, filing_id: str) -> Report:
-        """Télécharge le markdown et le metadata d'un filing"""
-        url = f"{self.base_url}/filings/{filing_id}/markdown/"
-        r = self.session.get(url, timeout=30)
-        self._handle_response(r)
-        markdown = r.text
+        """Télécharge le markdown et metadata d'un filing, fallback Level 1"""
+        url_md = f"{self.base_url}/filings/{filing_id}/markdown/"
+        url_meta = f"{self.base_url}/filings/{filing_id}/"
 
-        # metadata
-        meta_url = f"{self.base_url}/filings/{filing_id}/"
         try:
-            mr = self.session.get(meta_url, timeout=10)
+            r = self.session.get(url_md, timeout=30)
+            if r.status_code == 403:
+                # Level 1 plan -> Markdown inaccessible
+                print(f"⚠️ Level 1 plan: accès Markdown refusé pour {filing_id}")
+                markdown = ""
+            else:
+                self._handle_response(r)
+                markdown = r.text
+        except requests.exceptions.RequestException as e:
+            print(f"[fetch_markdown] Erreur Markdown {filing_id}: {e}")
+            markdown = ""
+
+        # récupérer metadata (toujours possible en Level 1)
+        try:
+            mr = self.session.get(url_meta, timeout=10)
             self._handle_response(mr)
             metadata = mr.json()
         except Exception:
             metadata = {"id": filing_id}
 
-        # save locally
+        # sauvegarde locale
         path = os.path.join(self.storage_dir, f"{filing_id}.md")
         with open(path, "w", encoding="utf-8") as f:
             f.write(markdown)
@@ -112,6 +116,7 @@ class ReportFetcher:
         """
         Sélectionne des entreprises au hasard et télécharge un nombre limité de filings pour chacune,
         avec filtrage optionnel par type de filing.
+        Compatible Level 1: fallback Markdown vide si accès refusé.
         """
         reports = []
 

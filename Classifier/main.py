@@ -12,13 +12,12 @@ import os
 import json
 import yaml
 from src.data_fetching.fetch_reports import ReportFetcher
-from src.preprocessing.chunking import create_chunks
 from src.weak_labelling.llm_classifier import LocalLLMClassifier
 
 # -------------------------
 # 1️⃣ Charger la config YAML
 # -------------------------
-with open("config/config.yaml", "r", encoding="utf-8") as f:
+with open("Classifier/config/config.yaml", "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
 api_key = config["api"]["key"]
@@ -50,7 +49,7 @@ reports = fetcher.fetch_random_filings(
 )
 print(f"✅ {len(reports)} rapports téléchargés")
 
-# -------------------------
+""" # -------------------------
 # 3️⃣ Créer les chunks
 # -------------------------
 os.makedirs(chunk_dir, exist_ok=True)
@@ -107,3 +106,4 @@ with open(multi_file, "w", encoding="utf-8") as f:
 print("✅ Weak labelling terminé")
 print(f"- Total chunks : {len(weak_results)}")
 print(f"- Chunks nécessitant relecture manuelle : {len(manual_cases)}")
+ """
