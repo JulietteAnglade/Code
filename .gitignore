@@ -18,7 +18,10 @@ __pycache__/
 *.pkl
 *.csv
 *.json
+*.md
 
 # Ignore OS files
 .DS_Store
 Thumbs.db
+
+

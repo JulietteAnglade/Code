@@ -22,3 +22,5 @@ ollama>=0.0.8
 # Optionnel: pour la visualisation / PCA
 matplotlib>=3.8.0
 
+pymanopt>=0.2.0
+autograd>=1.5.0

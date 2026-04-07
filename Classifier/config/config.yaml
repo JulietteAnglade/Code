@@ -1,11 +1,16 @@
 api:
-  key: "EdDi9ZvaIS7YgAcj6wjAW7pYwR2OBjzZBtU8YNHa"
+  key: "nV75LrZdWH5h4mifv4rS56Ue87LZBj3D9h26S2Fh"
+  base_url: "https://api.financialreports.eu/"
 
-download:
-  output_dir: "data/raw_reports"
-  n_random_companies: 100
+fetch:
+  storage_dir: "data/raw_reports"
+  n_companies: 100
   n_filings_per_company: 3
-  filing_type_id: null
+  n_files : 500
+  filing_type_names:
+    - "Quarterly Report"
+    - "Annual Report"
+  selected_companies_file: "companies.txt"
 
 chunking:
   chunk_size: 2000
